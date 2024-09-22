@@ -109,6 +109,29 @@ class DynamicSelect {
         }
     }
 
+    // New refresh method with selection of the new element
+    refresh(data, selectedValue = null) {
+        this.data = data;  // Update the data
+
+        if (selectedValue) {
+            // Find the newly added element and mark it as selected
+            this.data.forEach(option => {
+                if (option.value === selectedValue) {
+                    option.selected = true;  // Mark this option as selected
+                } else {
+                    option.selected = false;  // Unselect others
+                }
+            });
+        }
+
+        const newElement = this._template();  // Create new HTML for the component
+        this.element.replaceWith(newElement);  // Replace the current element with the new one
+        this.element = newElement;  // Update the reference to the new element
+
+        this._updateSelected();
+        this._eventHandlers();  // Reattach event handlers
+    }
+    
     get selectedValue() {
         let selected = this.data.filter(option => option.selected);
         selected = selected.length ? selected[0].value : '';
