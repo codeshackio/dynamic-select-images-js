@@ -1,3 +1,6 @@
+.dynamic-select.dynamic-select-bootstrap .dynamic-select-header {
+    border: 0;
+  }
 .dynamic-select {
     display: flex;
     box-sizing: border-box;
@@ -5,6 +8,11 @@
     position: relative;
     width: 100%;
     user-select: none;
+    &.dynamic-select-bootstrap {
+        .dynamic-select-header {
+            border: 0;
+        }
+    }
     .dynamic-select-header {
         border: 1px solid #dee2e6;
         padding: 7px 30px 7px 12px;
@@ -63,7 +71,7 @@
         }
         .dynamic-select-option {
             padding: 7px 12px;
-            &:hover, &:active {
+            &:hover, &:active, .dynamic-select-option-focus {
                 background-color: #f3f4f7;
             }
         }
