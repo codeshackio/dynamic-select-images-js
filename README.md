@@ -68,6 +68,7 @@ To use this dynamic select with images in your project, follow these steps:
     ```javascript
     new DynamicSelect('#dynamic-select', {
         placeholder: 'Select an option',
+        tabindex: 0,
         columns: 1,
         width: '300px',
         height: '40px',
@@ -96,6 +97,7 @@ You can also use custom HTML content for the options:
 
 ```javascript
 new DynamicSelect('#custom-select', {
+    bootstrapForm: true,
     placeholder: 'Select an option',
     data: [
         { value: '1', html: '<img src="path/to/image1.jpg" alt="Option 1"><span>Option 1</span>' },
