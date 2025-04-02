@@ -83,7 +83,7 @@ To use this dynamic select with images in your project, follow these steps:
     });
     ```
 
-### Advanced Example with Custom HTML Content
+### Advanced Example with Custom HTML Content + Bootstrap CSS
 
 You can also use custom HTML content for the options:
 
@@ -97,7 +97,7 @@ You can also use custom HTML content for the options:
 
 ```javascript
 new DynamicSelect('#custom-select', {
-    bootstrapForm: true,
+    bootstrapForm: true, // Requires Bootstrap5 library
     placeholder: 'Select an option',
     data: [
         { value: '1', html: '<img src="path/to/image1.jpg" alt="Option 1"><span>Option 1</span>' },
