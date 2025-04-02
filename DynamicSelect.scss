@@ -71,7 +71,7 @@
         }
         .dynamic-select-option {
             padding: 7px 12px;
-            &:hover, &:active, &.dynamic-select-focus {
+            &:hover, &:active, &.focus {
                 background-color: #f3f4f7;
             }
         }
