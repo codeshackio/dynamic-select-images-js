@@ -6,6 +6,9 @@
   width: 100%;
   user-select: none;
 }
+.dynamic-select.dynamic-select-bootstrap .dynamic-select-header {
+  border: 0;
+}
 .dynamic-select .dynamic-select-header {
   border: 1px solid #dee2e6;
   padding: 7px 30px 7px 12px;
@@ -66,7 +69,9 @@
 .dynamic-select .dynamic-select-options .dynamic-select-option {
   padding: 7px 12px;
 }
-.dynamic-select .dynamic-select-options .dynamic-select-option:hover, .dynamic-select .dynamic-select-options .dynamic-select-option:active {
+.dynamic-select .dynamic-select-options .dynamic-select-option:hover,
+.dynamic-select .dynamic-select-options .dynamic-select-option:active,
+.dynamic-select .dynamic-select-options .dynamic-select-option.focus {
   background-color: #f3f4f7;
 }
 .dynamic-select .dynamic-select-header, .dynamic-select .dynamic-select-option {
