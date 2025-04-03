@@ -175,7 +175,9 @@ NOTE: **bootstrapForm** option requires library: Bootstrap (v5 / latest).
 Example configuration:
 ```javascript
 new DynamicSelect('#dynamic-select', {
+    bootstrapForm: true,
     placeholder: 'Select an option',
+    tabindex: 0,
     columns: 2,
     width: '300px',
     height: '50px',
