@@ -122,7 +122,7 @@ class DynamicSelect {
         });
 
         document.addEventListener('keydown', event => {
-
+            if (document.activeElement !== this.element) return;
             if (event.target.querySelector('.dynamic-select-header') && event.code == 'Space') {
                 this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
                 (this._handlerState > 1)
