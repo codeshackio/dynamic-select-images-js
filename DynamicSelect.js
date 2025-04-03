@@ -101,6 +101,8 @@ class DynamicSelect {
             else this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
         });
         this.element.addEventListener('focus', () => {
+            if (document.activeElement === this.element)
+                document.querySelectorAll('.dynamic-select-header').forEach(header => header.classList.remove('dynamic-select-header-active'))
             if (!this.element.querySelector('.dynamic-select-header').classList.contains('dynamic-select-header-active'))
                  this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
             this.optionElement = this.optionElement;
