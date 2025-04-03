@@ -83,7 +83,7 @@ To use this dynamic select with images in your project, follow these steps:
     });
     ```
 
-### Advanced Example with Custom HTML Content + Bootstrap CSS
+### Advanced Example with Custom HTML Content
 
 You can also use custom HTML content for the options:
 
@@ -100,15 +100,30 @@ new DynamicSelect('#custom-select', {
     bootstrapForm: true, // Requires Bootstrap5 library
     placeholder: 'Select an option',
     data: [
-        { value: '1', html: '<img src="path/to/image1.jpg" alt="Option 1"><span>Option 1</span>' },
-        { value: '2', html: '<img src="path/to/image2.jpg" alt="Option 2"><span>Option 2</span>' },
-        { value: '3', html: '<img src="path/to/image3.jpg" alt="Option 3"><span>Option 3</span>' }
+        { value: '1', html: '<img src="path/to/image1.jpg" alt="Option 1"><span class="dynamic-select-option-text">Option 1</span>' },
+        { value: '2', html: '<img src="path/to/image2.jpg" alt="Option 2"><span class="dynamic-select-option-text">Option 2</span>' },
+        { value: '3', html: '<img src="path/to/image3.jpg" alt="Option 3"><span class="dynamic-select-option-text">Option 3</span>' }
     ],
     onChange: function(value, text, option) {
         console.log(value, text, option);
     }
 });
 ```
+
+**data** list containing object with a **html** option, requires strictly one element with **class** `.dynamic-select-option-text`. In the above example, that would be for each `<span>` element. This enhances search functionality by allowing clients to filter options based on the first letter, making selection more efficient.
+
+```html
+<span class="dynamic-select-option-text">Option N</span>
+```
+
+**bootstrapForm** option styles the **DynamicSelect** `<div>` wrapper like so:
+
+```html
+<div class="form-control px-0"><!-- DynamicSelect --></div>
+```
+This modified `<div>` wrapper makes it easier to apply **Bootstrap** styles to the **DynamicSelect** element. Additionally, it provides `.dynamic-select-bootstrap` class, removing default border style from a `.dynamic-select-header` element.
+
+
 
 ### Example with Multiple Columns
 
@@ -145,13 +160,17 @@ It is useful if you want to populate images in a grid-like view.
 
 To customize the dynamic select with images, you can modify the HTML and JavaScript as needed. The following options are available:
 
+- `bootstrapForm`: Converts select element to bootstrap's form-control.
 - `placeholder`: Placeholder text for the select element.
+- `tabindex`: Tabindex attribute for the select element's div wrapper.
 - `columns`: Number of columns in the dropdown.
 - `name`: Name attribute for the select element.
 - `width`: Width of the select element.
 - `height`: Height of the select element.
 - `data`: Array of objects representing the select options.
 - `onChange`: Callback function when the selected option changes.
+
+NOTE: **bootstrapForm** option requires library: Bootstrap (v5 / latest). 
 
 Example configuration:
 ```javascript

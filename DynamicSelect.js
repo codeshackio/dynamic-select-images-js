@@ -6,7 +6,7 @@
  * 
  * Modified by 'Gabriel Książek' (McRaZick) | https://github.com/gubrus50
  * Modification: 'Implemented keyboard navigability/accessibility for DynamicSelect'
- * Date of last modification: '02/April/2025' (Timezone: UTC-0)
+ * Date of last modification: '03/April/2025' (Timezone: UTC-0)
  */
 class DynamicSelect {
 
@@ -47,6 +47,7 @@ class DynamicSelect {
         this.element = this._template();
         this.selectElement.replaceWith(this.element);
         this.optionElement = this.element.querySelector('.dynamic-select-selected');
+        this._handlerState = 0; // 0 = not focused and closed, 1 = focused and open, 2 = focused and closed
         this._updateSelected();
         this._eventHandlers();
     }
@@ -91,34 +92,49 @@ class DynamicSelect {
         this.element.querySelectorAll('.dynamic-select-option').forEach(option => {
             option.onclick = () => this.optionElement = option;
         });
-        this.element.querySelector('.dynamic-select-header').onclick = event => {
-            event.stopPropagation();
-            this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
-        };
+        this.element.addEventListener('click', () => {
+            (this._handlerState > 1)
+            ? this._handlerState = 1
+            : this._handlerState++;
+            if ((this._handlerState > 1) && (document.activeElement === this.element))
+                 this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
+            else this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
+        });
         this.element.addEventListener('focus', () => {
             if (!this.element.querySelector('.dynamic-select-header').classList.contains('dynamic-select-header-active'))
-                this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
+                 this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
             this.optionElement = this.optionElement;
         });
         if (this.selectElement.id && document.querySelector('label[for="' + this.selectElement.id + '"]')) {
             document.querySelector('label[for="' + this.selectElement.id + '"]').onclick = () => {
                 this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
-            };
+            }
         }
+
         document.addEventListener('click', event => {
-            if (!event.target.closest('.' + this.name) && !event.target.closest('label[for="' + this.selectElement.id + '"]')) {
+            if (!event.target.closest('.' + this.name)
+            &&  !event.target.closest('label[for="' + this.selectElement.id + '"]')
+            &&  !event.target.closest('div:has(.' + this.name + ')')?.children[0].classList.contains(this.name))
+            {
                 this.element.querySelector('.dynamic-select-header').classList.remove('dynamic-select-header-active');
+                this._handlerState = 0;
             }
         });
+
         document.addEventListener('keydown', event => {
-            if (event.target.querySelector('.dynamic-select-header') && event.code == 'Space')
+
+            if (event.target.querySelector('.dynamic-select-header') && event.code == 'Space') {
                 this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
+                (this._handlerState > 1)
+                ? this._handlerState = 1
+                : this._handlerState++;
+            }
             if (!event.target.querySelector('.dynamic-select-header-active')) return;
-
             if (['Escape', 'Shift', 'Tab', 'ArrowUp', 'ArrowDown'].includes(event.key)) event.preventDefault();
-
+            
             let value = this.element.querySelector('input').value;
             let index = this.data.findIndex(data => data.value == value);
+
 
             const exit = () => this.element.querySelector('.dynamic-select-header').classList.remove('dynamic-select-header-active');
         
@@ -132,35 +148,40 @@ class DynamicSelect {
                 else if (index < 0 && (event.key == 'Tab' && event.shiftKey == true)) exit();
             };
 
-            const nextOptionByLetter = (letter) => {
+            const findOptionByLetter = (letter, direction) => {
+                let option, text;
+                try {
                     letter = letter.toLowerCase().trim();
-                let option = this.optionElement.nextElementSibling;
-                let text;
+                    option = (direction === 'next')
+                        ? this.optionElement.nextElementSibling
+                        : this.optionElement.previousElementSibling;
+                }
+                catch (error) {
+                    if (!option) {
+                        if (this.optionElement)
+                            throw ReferenceError(`Failed to get next/previous option adjacent to optionElement ${console.warn(this.optionElement) || ''}`);
+                        if (this.selectedValue !== '')
+                            throw ReferenceError(`Invalid DynamicSelect option was selected ${console.warn(this.optionElement) || ''}`);
+                        option = this.element.querySelector('.dynamic-select-options .dynamic-select-option') ?? (() => {
+                            throw ReferenceError('No valid DynamicSelect options available in .dynamic-select-options')
+                        })();
+                    }
+                    else throw new Error(error);
+                }
 
                 for (let i = 0; i < 2; i++) {
                     while (option) {
                         text = option.querySelector('.dynamic-select-option-text')?.textContent.toLowerCase().trim();
-                        if (text.startsWith(letter)) return option;
-                        else option = option.nextElementSibling;
-                    }
-                    option = this.element.querySelector('.dynamic-select-options .dynamic-select-option');
-                }
-                return null;
-            };
+                        if (!text) throw ReferenceError(`Missing '.dynamic-select-option-text' child in DynamicSelect option ${console.warn(option) || ''}`);
             
-            const prevOptionByLetter = (letter) => {
-                    letter = letter.toLowerCase().trim();
-                let option = this.optionElement.previousElementSibling;
-                let text;
-            
-                for (let i = 0; i < 2; i++) {
-                    while (option) {
-                        text = option.querySelector('.dynamic-select-option-text')?.textContent.toLowerCase().trim();
                         if (text.startsWith(letter)) return option;
-                        else option = option.previousElementSibling;
+                        option = (direction === 'next') ? option.nextElementSibling : option.previousElementSibling;
                     }
-                    option = this.element.querySelector('.dynamic-select-options .dynamic-select-option:last-child');
+                    option = (direction === 'next')
+                        ? this.element.querySelector('.dynamic-select-options .dynamic-select-option')
+                        : this.element.querySelector('.dynamic-select-options .dynamic-select-option:last-child');
                 }
+
                 return null;
             };
 
@@ -170,10 +191,7 @@ class DynamicSelect {
             else if (event.key == 'ArrowDown'|| event.key == 'Tab') nextIndex();
             else if (event.key.length === 1 && event.key.match(/^\p{Letter}/u))
             {
-                let option = (event.key && event.shiftKey == true)
-                ? prevOptionByLetter(event.key)
-                : nextOptionByLetter(event.key);
-
+                let option = findOptionByLetter(event.key, event.shiftKey ? 'prev' : 'next');
                 if (option && option !== this.optionElement) this.optionElement = option;
                 return;
             }
@@ -181,7 +199,7 @@ class DynamicSelect {
             
             
             let newOption = this.element.querySelectorAll('.dynamic-select-option')[index];
-            if (newOption) this.optionElement = newOption;
+            if (newOption)  this.optionElement = newOption;
         });
     }
 
@@ -214,6 +232,8 @@ class DynamicSelect {
     }
 
     set optionElement(value) {
+        if (!value?.classList.contains('dynamic-select-option')) return;
+        
         this.options.optionElement = value;
 
         this.element.querySelectorAll('.dynamic-select-selected').forEach(selected => selected.classList.remove('dynamic-select-selected'));
@@ -222,6 +242,7 @@ class DynamicSelect {
         this.element.querySelector('input').value = this.options.optionElement.getAttribute('data-value');
         this.data.forEach(data => data.selected = false);
         this.data.filter(data => data.value == this.options.optionElement.getAttribute('data-value'))[0].selected = true;
+
         this.options.onChange(
             this.options.optionElement.getAttribute('data-value'),
             this.options.optionElement.querySelector('.dynamic-select-option-text')
@@ -236,7 +257,7 @@ class DynamicSelect {
         ||  optionRect.bottom > containerRect.bottom
         ||  optionRect.left < containerRect.left
         ||  optionRect.right > containerRect.right)
-            this.options.optionElement.scrollIntoView({ block: "nearest" });
+            this.options.optionElement.scrollIntoView({ block: 'nearest' });
             
         this.element.querySelectorAll('.dynamic-select-option').forEach(option => option.classList.remove('focus'));
         this.optionElement.classList.toggle('focus');
