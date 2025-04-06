@@ -79,12 +79,6 @@ dynamic-select[disabled], .dynamic-select .dynamic-select-options .dynamic-selec
 .dynamic-select .dynamic-select-options .dynamic-select-option:hover, .dynamic-select .dynamic-select-options .dynamic-select-option:active, .dynamic-select .dynamic-select-options .dynamic-select-option.focus {
   background-color: #f3f4f7;
 }
-.dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
-  opacity: 0.5;
-  pointer-events: none;
-  background-color: transparent;
-  pointer-events: none;
-}
 .dynamic-select .dynamic-select-header, .dynamic-select .dynamic-select-option {
   display: flex;
   box-sizing: border-box;
