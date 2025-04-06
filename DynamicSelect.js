@@ -5,30 +5,62 @@
  * Released under the MIT license
  * 
  * Modified by 'Gabriel Książek' (McRaZick) | https://github.com/gubrus50
- * Modification: 'Implemented keyboard navigability/accessibility for DynamicSelect'
- * Date of last modification: '03/April/2025' (Timezone: UTC-0)
+ * Contribution date: 'From 02/April/2025 To 06/April/2025 (Timezone: UTC-0)'
+ * Implementation:
+ *   +   added keyboard navigability/accessibility for DynamicSelect.
+ *   +   added support for "disabled" attribute.
+ *   -/+ replaced primary elements with custom semantic elements:
+ *           this.element             = <dynamic-select> 
+ *           .dynamic-select          = <selection>
+ *           .dynamic-select-selected = <selected>
+ *           .dynamic-select-options  = <dropdown>
+ *           .dynamic-select-option   = <item>
+ * 
+ *   -/+ moved ID attribute FROM <selection> TO <dynamic-select>       
+ *   + added support for extending classes and styles for most semantic elements.
+ *   + 'new DynamicSelect()' object now inherits options from target <select> element,
+ *      and can modify them. For example, by adding extra options or overwriting existing ones. 
  */
+
 class DynamicSelect {
 
     constructor(element, options = {}) {
-        let defaults = {
-            bootstrapForm: false, /* Requires bootstrap5 library */
+        
+        this.options = {
             placeholder: 'Select an option',
             tabindex: 0,
             columns: 1,
             name: '',
+            style: '',
+            class: '',
             width: '',
             height: '',
+            disabled: false,
+            dropdownWidth: '',
+            dropdownHeight: '',
+            dropdownStyle: '',
+            dropdownClass: '',
+            selectedStyle: '',
+            selectedClass: '',
+            selectionStyle: '',
+            selectionClass: '',
             data: [],
             onChange: function() {}
         };
-        this.options = Object.assign(defaults, options);
+        
         this.selectElement = typeof element === 'string' ? document.querySelector(element) : element;
-        for(const prop in this.selectElement.dataset) {
-            if (this.options[prop] !== undefined) {
-                this.options[prop] = this.selectElement.dataset[prop];
+        this.options.disabled = (this.selectElement.hasAttribute('disabled') || this.selectElement.dataset.hasOwnProperty('disabled'));
+      
+        for (const prop in this.selectElement.dataset) {
+            if (this.options.hasOwnProperty(prop)) {
+                if (prop === 'disabled') this.options[prop] = true;
+                else this.options[prop] = this.selectElement.dataset[prop];
             }
         }
+
+        // Prioritize user defined options from DynamicSelect object over those directly defined by data attributes
+        Object.assign(this.options, options);
+
         this.name = this.selectElement.getAttribute('name') ? this.selectElement.getAttribute('name') : 'dynamic-select-' + Math.floor(Math.random() * 1000000);
         if (!this.options.data.length) {
             let options = this.selectElement.querySelectorAll('option');
@@ -40,14 +72,16 @@ class DynamicSelect {
                     selected: options[i].selected,
                     html: options[i].getAttribute('data-html'),
                     imgWidth: options[i].getAttribute('data-img-width'),
-                    imgHeight: options[i].getAttribute('data-img-height')
+                    imgHeight: options[i].getAttribute('data-img-height'),
+                    disabled: options[i].hasAttribute('disabled')  
                 });
             }
         }
+
         this.element = this._template();
         this.selectElement.replaceWith(this.element);
         this.optionElement = this.element.querySelector('.dynamic-select-selected');
-        this._handlerState = 0; // 0 = not focused and closed, 1 = focused and open, 2 = focused and closed
+        this.disabled = this.disabled;
         this._updateSelected();
         this._eventHandlers();
     }
@@ -66,142 +100,163 @@ class DynamicSelect {
                 `;
             }
             optionsHTML += `
-                <div class="dynamic-select-option${this.data[i].value == this.selectedValue ? ' dynamic-select-selected' : ''}${this.data[i].text || this.data[i].html ? '' : ' dynamic-select-no-text'}" data-value="${this.data[i].value}" style="width:${optionWidth}%;${this.height ? 'height:' + this.height + ';' : ''}">
+                <item class="dynamic-select-option${this.data[i].value == this.selectedValue ? ' dynamic-select-selected' : ''}${this.data[i].text || this.data[i].html ? '' : ' dynamic-select-no-text'}" data-value="${this.data[i].value}" style="width:${optionWidth}%;${this.height ? 'height:' + this.height + ';' : ''}"${this.data[i].disabled ? ' disabled' : ''}>
                     ${optionContent}
-                </div>
+                </item>
             `;
         }
         let template = `
-            <div class="dynamic-select ${this.options.bootstrapForm && 'dynamic-select-bootstrap'} ${this.name}"${this.selectElement.id ? ' id="' + this.selectElement.id + '"' : ''} style="${this.width ? 'width:' + this.width + ';' : ''}${this.height ? 'height:' + this.height + ';' : ''}">
+            <selection class="dynamic-select ${this.name} ${this.options.selectionClass}" style="${this.width ? 'width:' + this.width + ';' : ''}${this.height ? 'height:' + this.height + ';' : ''}${this.options.selectionStyle}">
                 <input type="hidden" name="${this.name}" value="${this.selectedValue}" tabindex="-1">
-                <div class="dynamic-select-header" style="${this.width ? 'width:' + this.width + ';' : ''}${this.height ? 'height:' + this.height + ';' : ''}"><span class="dynamic-select-header-placeholder">${this.placeholder}</span></div>
-                <div class="dynamic-select-options" style="${this.options.dropdownWidth ? 'width:' + this.options.dropdownWidth + ';' : ''}${this.options.dropdownHeight ? 'height:' + this.options.dropdownHeight + ';' : ''}">${optionsHTML}</div>
-            </div>
+                <selected class="dynamic-select-header ${this.options.selectedClass}" style="${this.width ? 'width:' + this.width + ';' : ''}${this.height ? 'height:' + this.height + ';' : ''}${this.options.selectedStyle}"><span class="dynamic-select-header-placeholder">${this.placeholder}</span></selected>
+                <dropdown class="dynamic-select-options ${this.options.dropdownClass}" style="${this.options.dropdownWidth ? 'width:' + this.options.dropdownWidth + ';' : ''}${this.options.dropdownHeight ? 'height:' + this.options.dropdownHeight + ';' : ''}${this.options.dropdownStyle}">${optionsHTML}</dropdown>
+            </selection>
         `;
-        let element = document.createElement('div');
 
-        if (this.options.bootstrapForm)
-            element.classList.add('form-control', 'px-0');
-
-        element.setAttribute('tabindex', this.options.tabindex);
+        let element = document.createElement('dynamic-select');
+        element.setAttribute('id', this.selectElement.id && this.selectElement.id);
+        element.setAttribute('class', this.options.class);
+        element.setAttribute('style', this.options.style);
+        element.setAttribute('tabindex', this.tabindex);
+        (this.disabled == true) &&
+        element.setAttribute('disabled', '');
         element.innerHTML = template;
         return element;
     }
 
     _eventHandlers() {
-        this.element.querySelectorAll('.dynamic-select-option').forEach(option => {
-            option.onclick = () => this.optionElement = option;
-        });
-        this.element.addEventListener('click', () => {
-            (this._handlerState > 1)
-            ? this._handlerState = 1
-            : this._handlerState++;
-            if ((this._handlerState > 1) && (document.activeElement === this.element))
-                 this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
-            else this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
-        });
-        this.element.addEventListener('focus', () => {
-            if (document.activeElement === this.element)
-                document.querySelectorAll('.dynamic-select-header').forEach(header => header.classList.remove('dynamic-select-header-active'))
-            if (!this.element.querySelector('.dynamic-select-header').classList.contains('dynamic-select-header-active'))
-                 this.element.querySelector('.dynamic-select-header').classList.add('dynamic-select-header-active');
-            this.optionElement = this.optionElement;
-        });
-        if (this.selectElement.id && document.querySelector('label[for="' + this.selectElement.id + '"]')) {
-            document.querySelector('label[for="' + this.selectElement.id + '"]').onclick = () => {
-                this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
-            }
+
+        const getContextOfClickedTargetDynamicOption = (eventTarget) => {
+            const parentOptions = eventTarget.closest('.dynamic-select-options');
+            const clickedOption = eventTarget.closest('.dynamic-select-option');
+            return !parentOptions
+                && !clickedOption
+                 ? { clicked: false }
+                 : { clicked: !!parentOptions, disabled: !clickedOption } 
         }
+
+        new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'disabled');
+                this.disabled = this.element.hasAttribute('disabled');
+        })}).observe(this.element, { attributes: true });
+        
+        const header = this.element.querySelector('.dynamic-select-header');
+        this.open = () => (!this.disabled) && header.classList.add('dynamic-select-header-active');
+        this.close = () => (!this.disabled) && header.classList.remove('dynamic-select-header-active');
+        this.toggle = () => (!this.disabled) && header.classList.toggle('dynamic-select-header-active');
+
+        this.element.querySelectorAll('.dynamic-select-option').forEach(option =>
+        option.addEventListener('click', () => this.optionElement = option));
+
+        this.element.addEventListener('click', (event) => {
+            if (document.activeElement !== this.element) return;
+            if (!header.classList.contains('dynamic-select-header-active')) return this.open();
+            if (event.target.closest('dynamic-select'))
+            {
+                const option = getContextOfClickedTargetDynamicOption(event.target);
+                if  (!option.clicked) return this.toggle();
+                else (option.clicked && !option.disabled) && this.close();
+            }
+        });
+
+        this.element.addEventListener('blur', () => setTimeout(() =>
+        (!this.element.contains(document.activeElement)) && this.close(), 50));
+
+        if (this.selectElement.id && document.querySelector(`label[for="${this.selectElement.id}"]`))
+        document.querySelector(`label[for="${this.selectElement.id}"]`).onclick = () => this.toggle();
 
         document.addEventListener('click', event => {
             if (!event.target.closest('.' + this.name)
             &&  !event.target.closest('label[for="' + this.selectElement.id + '"]')
-            &&  !event.target.closest('div:has(.' + this.name + ')')?.children[0].classList.contains(this.name))
+            &&  !event.target.closest('div:has(.' + this.name + ')')?.children[0].classList.contains(this.name)
+            &&  event.target.closest('dynamic-select') !== this.element)
             {
-                this.element.querySelector('.dynamic-select-header').classList.remove('dynamic-select-header-active');
-                this._handlerState = 0;
+                const option = getContextOfClickedTargetDynamicOption(event.target);
+                if (option.clicked && !option.disabled) this.close();
             }
         });
 
+        const reservedKeys = ['Escape', 'Enter', ' ', 'Shift', 'Tab', 'ArrowUp', 'ArrowDown'];
+
         document.addEventListener('keydown', event => {
-            if (document.activeElement !== this.element) return;
-            if (event.target.querySelector('.dynamic-select-header') && event.code == 'Space') {
-                this.element.querySelector('.dynamic-select-header').classList.toggle('dynamic-select-header-active');
-                (this._handlerState > 1)
-                ? this._handlerState = 1
-                : this._handlerState++;
-            }
-            if (!event.target.querySelector('.dynamic-select-header-active')) return;
-            if (['Escape', 'Shift', 'Tab', 'ArrowUp', 'ArrowDown'].includes(event.key)) event.preventDefault();
-            
-            let value = this.element.querySelector('input').value;
-            let index = this.data.findIndex(data => data.value == value);
+            if (document.activeElement !== this.element
+            || !event.target.querySelector('.dynamic-select-header.dynamic-select-header-active') && event.key == 'Tab') return;
+            if (reservedKeys.includes(event.key) || event.code == 'Space') event.preventDefault();
 
+            if (event.key == 'Enter') this.toggle();
+            else if (event.key == ' '
+            || event.code == 'Space') this.open();
 
-            const exit = () => this.element.querySelector('.dynamic-select-header').classList.remove('dynamic-select-header-active');
+            let newOption, direction,
+            value = this.element.querySelector(`input[name="${this.name}"]`).value,
+            index = this.data.findIndex(data => data.value == value),
+            options = [...this.element.querySelectorAll('.dynamic-select-option')];
+            if (!options) throw new Error('No valid DynamicSelect options available');
         
+
             const nextIndex = () => { index++;
                 if (index >= this.data.length && event.key == 'ArrowDown') index = 0;
-                else if (index >= this.data.length && event.key == 'Tab') exit();
+                else if (index >= this.data.length && event.key == 'Tab') this.close();
             };
 
             const prevIndex = () => { index--;
                 if (index < 0 && event.key == 'ArrowUp') index = this.data.length - 1;
-                else if (index < 0 && (event.key == 'Tab' && event.shiftKey == true)) exit();
+                else if (index < 0 && (event.key == 'Tab' && event.shiftKey == true)) this.close();
             };
 
             const findOptionByLetter = (letter, direction) => {
-                let option, text;
-                try {
-                    letter = letter.toLowerCase().trim();
-                    option = (direction === 'next')
-                        ? this.optionElement.nextElementSibling
-                        : this.optionElement.previousElementSibling;
-                }
-                catch (error) {
-                    if (!option) {
-                        if (this.optionElement)
-                            throw ReferenceError(`Failed to get next/previous option adjacent to optionElement ${console.warn(this.optionElement) || ''}`);
-                        if (this.selectedValue !== '')
-                            throw ReferenceError(`Invalid DynamicSelect option was selected ${console.warn(this.optionElement) || ''}`);
-                        option = this.element.querySelector('.dynamic-select-options .dynamic-select-option') ?? (() => {
-                            throw ReferenceError('No valid DynamicSelect options available in .dynamic-select-options')
-                        })();
-                    }
-                    else throw new Error(error);
-                }
+                letter = letter.toLowerCase().trim();
 
-                for (let i = 0; i < 2; i++) {
-                    while (option) {
-                        text = option.querySelector('.dynamic-select-option-text')?.textContent.toLowerCase().trim();
-                        if (!text) throw ReferenceError(`Missing '.dynamic-select-option-text' child in DynamicSelect option ${console.warn(option) || ''}`);
-            
-                        if (text.startsWith(letter)) return option;
-                        option = (direction === 'next') ? option.nextElementSibling : option.previousElementSibling;
-                    }
-                    option = (direction === 'next')
-                        ? this.element.querySelector('.dynamic-select-options .dynamic-select-option')
-                        : this.element.querySelector('.dynamic-select-options .dynamic-select-option:last-child');
-                }
+                const currentIndex = options.findIndex(opt => opt === this.optionElement);
+                const step = direction === 'next' ? 1 : -1;
 
+                // Start from current position (or beginning/end if not found)
+                let start = currentIndex !== -1 ? currentIndex : (step === 1 ? -1 : options.length);
+
+                for (let i = 1; i <= options.length; i++) {
+                    const index = (start + step * i + options.length) % options.length;
+                    const option = options[index];
+                    const text = option.querySelector('.dynamic-select-option-text')?.textContent.toLowerCase().trim();
+
+                    if (!text) {
+                        console.warn('Missing .dynamic-select-option-text in option', option);
+                        continue;
+                    }
+
+                    if (text.startsWith(letter) && !option.hasAttribute('disabled')) return option;
+                }
                 return null;
             };
 
 
-            if (event.key == 'Escape') return exit();
-            else if (event.key == 'ArrowUp' || (event.key == 'Tab' && event.shiftKey == true)) prevIndex();
-            else if (event.key == 'ArrowDown'|| event.key == 'Tab') nextIndex();
-            else if (event.key.length === 1 && event.key.match(/^\p{Letter}/u))
-            {
-                let option = findOptionByLetter(event.key, event.shiftKey ? 'prev' : 'next');
-                if (option && option !== this.optionElement) this.optionElement = option;
+            if (event.key == 'Escape') {
+                return this.close();
+            }
+            else if (event.key == 'ArrowUp' || (event.key == 'Tab' && event.shiftKey == true)) {
+                direction = 'prev'; prevIndex();
+            }
+            else if (event.key == 'ArrowDown' || event.key == 'Tab') {
+                direction = 'next'; nextIndex();
+            }
+            else if (event.key.length === 1 && event.key.match(/^\p{Letter}/u)) {
+                direction = event.shiftKey ? 'prev' : 'next';
+                newOption = findOptionByLetter(event.key, direction);
+                if (newOption
+                &&  newOption !== this.optionElement
+                && !newOption.hasAttribute('disabled')) this.optionElement = newOption;
                 return;
             }
             else return;
-            
-            
-            let newOption = this.element.querySelectorAll('.dynamic-select-option')[index];
-            if (newOption)  this.optionElement = newOption;
+    
+
+            for (let i = 0; i < options.length; i++) {
+                    newOption = options[index];
+                if (newOption
+                && !newOption.hasAttribute('disabled')) return this.optionElement = newOption;
+                
+                else direction === 'next' ? nextIndex() : prevIndex();
+            }
         });
     }
 
@@ -234,14 +289,16 @@ class DynamicSelect {
     }
 
     set optionElement(value) {
-        if (!value?.classList.contains('dynamic-select-option')) return;
-        
+        if (!value?.classList.contains('dynamic-select-option')
+        || value.hasAttribute('disabled')
+        || this.element.hasAttribute('disabled')) return;
+
         this.options.optionElement = value;
 
         this.element.querySelectorAll('.dynamic-select-selected').forEach(selected => selected.classList.remove('dynamic-select-selected'));
         this.options.optionElement.classList.add('dynamic-select-selected');
         this.element.querySelector('.dynamic-select-header').innerHTML = this.options.optionElement.innerHTML;
-        this.element.querySelector('input').value = this.options.optionElement.getAttribute('data-value');
+        this.element.querySelector(`input[name="${this.name}"]`).value = this.options.optionElement.getAttribute('data-value');
         this.data.forEach(data => data.selected = false);
         this.data.filter(data => data.value == this.options.optionElement.getAttribute('data-value'))[0].selected = true;
 
@@ -325,5 +382,16 @@ class DynamicSelect {
         return this.options.height;
     }
 
+    set disabled(value) {
+        this.options.disabled = value;
+        (this.disabled == true)
+        ? this.element.querySelector(`input[name="${this.name}"]`).setAttribute('disabled', '')
+        : this.element.querySelector(`input[name="${this.name}"]`).removeAttribute('disabled');
+    }
+
+    get disabled() {
+        return this.options.disabled;
+    }
 }
+
 document.querySelectorAll('[data-dynamic-select]').forEach(select => new DynamicSelect(select));

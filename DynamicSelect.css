@@ -1,13 +1,25 @@
-.dynamic-select {
-  display: flex;
-  box-sizing: border-box;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
-  user-select: none;
+dynamic-select,
+dynamic-select selection,
+dynamic-select selected,
+dynamic-select dropdown,
+dynamic-select item {
+  all: unset;
+  display: block;
 }
-.dynamic-select.dynamic-select-bootstrap .dynamic-select-header {
-  border: 0;
+dynamic-select[disabled],
+.dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+  background-color: transparent;
+  pointer-events: none;
+}
+.dynamic-select {
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    user-select: none;
 }
 .dynamic-select .dynamic-select-header {
   border: 1px solid #dee2e6;
