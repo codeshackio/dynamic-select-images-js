@@ -1,32 +1,27 @@
-dynamic-select,
-dynamic-select selection,
-dynamic-select selected,
-dynamic-select dropdown,
-dynamic-select item {
+dynamic-select selection, dynamic-select selected, dynamic-select dropdown, dynamic-select item {
   all: unset;
   display: block;
 }
-dynamic-select[disabled],
-.dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
+dynamic-select[disabled], .dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
   opacity: 0.5;
   pointer-events: none;
   background-color: transparent;
   pointer-events: none;
 }
 .dynamic-select {
-    display: flex;
-    box-sizing: border-box;
-    flex-direction: column;
-    position: relative;
-    width: 100%;
-    user-select: none;
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  user-select: none;
 }
 .dynamic-select .dynamic-select-header {
   border: 1px solid #dee2e6;
   padding: 7px 30px 7px 12px;
 }
 .dynamic-select .dynamic-select-header::after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   top: 50%;
@@ -81,10 +76,14 @@ dynamic-select[disabled],
 .dynamic-select .dynamic-select-options .dynamic-select-option {
   padding: 7px 12px;
 }
-.dynamic-select .dynamic-select-options .dynamic-select-option:hover,
-.dynamic-select .dynamic-select-options .dynamic-select-option:active,
-.dynamic-select .dynamic-select-options .dynamic-select-option.focus {
+.dynamic-select .dynamic-select-options .dynamic-select-option:hover, .dynamic-select .dynamic-select-options .dynamic-select-option:active, .dynamic-select .dynamic-select-options .dynamic-select-option.focus {
   background-color: #f3f4f7;
+}
+.dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+  background-color: transparent;
+  pointer-events: none;
 }
 .dynamic-select .dynamic-select-header, .dynamic-select .dynamic-select-option {
   display: flex;
@@ -109,14 +108,14 @@ dynamic-select[disabled],
   max-height: none;
   max-width: none;
 }
-.dynamic-select .dynamic-select-header img, .dynamic-select .dynamic-select-header svg, .dynamic-select .dynamic-select-header i, .dynamic-select .dynamic-select-header span, .dynamic-select .dynamic-select-option img, .dynamic-select .dynamic-select-option svg, .dynamic-select .dynamic-select-option i, .dynamic-select .dynamic-select-option span {
+.dynamic-select .dynamic-select-header img, .dynamic-select .dynamic-select-option img, .dynamic-select .dynamic-select-header svg, .dynamic-select .dynamic-select-option svg, .dynamic-select .dynamic-select-header i, .dynamic-select .dynamic-select-option i, .dynamic-select .dynamic-select-header span, .dynamic-select .dynamic-select-option span {
   box-sizing: border-box;
   margin-right: 10px;
 }
 .dynamic-select .dynamic-select-header.dynamic-select-no-text, .dynamic-select .dynamic-select-option.dynamic-select-no-text {
   justify-content: center;
 }
-.dynamic-select .dynamic-select-header.dynamic-select-no-text img, .dynamic-select .dynamic-select-header.dynamic-select-no-text svg, .dynamic-select .dynamic-select-header.dynamic-select-no-text i, .dynamic-select .dynamic-select-header.dynamic-select-no-text span, .dynamic-select .dynamic-select-option.dynamic-select-no-text img, .dynamic-select .dynamic-select-option.dynamic-select-no-text svg, .dynamic-select .dynamic-select-option.dynamic-select-no-text i, .dynamic-select .dynamic-select-option.dynamic-select-no-text span {
+.dynamic-select .dynamic-select-header.dynamic-select-no-text img, .dynamic-select .dynamic-select-option.dynamic-select-no-text img, .dynamic-select .dynamic-select-header.dynamic-select-no-text svg, .dynamic-select .dynamic-select-option.dynamic-select-no-text svg, .dynamic-select .dynamic-select-header.dynamic-select-no-text i, .dynamic-select .dynamic-select-option.dynamic-select-no-text i, .dynamic-select .dynamic-select-header.dynamic-select-no-text span, .dynamic-select .dynamic-select-option.dynamic-select-no-text span {
   margin-right: 0;
 }
 .dynamic-select .dynamic-select-header .dynamic-select-option-text, .dynamic-select .dynamic-select-option .dynamic-select-option-text {
