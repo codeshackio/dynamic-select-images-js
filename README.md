@@ -59,6 +59,7 @@ The complete guide and reference is available here: [https://codeshack.io/multi-
 
 Additionally, **class** and **style** attributes are reserved for the `<select>` element in case **DynamicSelect** object fails to convert the target select element to `<dynamic-select>`. Use dataset attributes: **data-style** and **data-class** to appropriately style the `<dynamic-select>` element.
 
+<br>
 
 ## Usage
 
@@ -93,6 +94,8 @@ To use this dynamic select with images in your project, follow these steps:
         }
     });
     ```
+
+<br>
 
 ### Advanced Example with Custom HTML Content
 
@@ -169,6 +172,8 @@ new DynamicSelect('#multi-column-select', {
 ```
 
 It is useful if you want to populate images in a grid-like view.
+
+<br>
 
 ## Configuration
 
