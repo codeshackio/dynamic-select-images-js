@@ -5,7 +5,7 @@
  * Released under the MIT license
  * 
  * Modified by 'Gabriel Książek' (McRaZick) | https://github.com/gubrus50
- * Contribution date: 'From 02/April/2025 To 06/April/2025 (Timezone: UTC-0)'
+ * Contribution date: 'From 02/April/2025 To 08/April/2025 (Timezone: UTC-0)'
  * Implementation:
  *   +   added keyboard navigability/accessibility for DynamicSelect.
  *   +   added support for "disabled" attribute.
@@ -31,19 +31,21 @@ class DynamicSelect {
             tabindex: 0,
             columns: 1,
             name: '',
-            style: '',
-            class: '',
             width: '',
             height: '',
+            style: '',
+            class: '',
             disabled: false,
+            selectionStyle: '',
+            selectionClass: '',
+            selectedStyle: '',
+            selectedClass: '',
             dropdownWidth: '',
             dropdownHeight: '',
             dropdownStyle: '',
             dropdownClass: '',
-            selectedStyle: '',
-            selectedClass: '',
-            selectionStyle: '',
-            selectionClass: '',
+            itemsStyle: '',
+            itemsClass: '',
             data: [],
             onChange: function() {}
         };
@@ -69,18 +71,18 @@ class DynamicSelect {
                     value: options[i].value,
                     text: options[i].innerHTML,
                     img: options[i].getAttribute('data-img'),
-                    selected: options[i].selected,
                     html: options[i].getAttribute('data-html'),
                     imgWidth: options[i].getAttribute('data-img-width'),
                     imgHeight: options[i].getAttribute('data-img-height'),
-                    disabled: options[i].hasAttribute('disabled')  
+                    selected: options[i].hasAttribute('selected'),
+                    disabled: options[i].hasAttribute('disabled'),
                 });
             }
         }
 
         this.element = this._template();
         this.selectElement.replaceWith(this.element);
-        this.optionElement = this.element.querySelector('.dynamic-select-selected');
+        this.optionElement = this.optionElement = this.selectedValue ? this.element.querySelector(`.dynamic-select-option[data-value="${this.selectedValue}"]`) : null;
         this.disabled = this.disabled;
         this._updateSelected();
         this._eventHandlers();
@@ -100,7 +102,7 @@ class DynamicSelect {
                 `;
             }
             optionsHTML += `
-                <item class="dynamic-select-option${this.data[i].value == this.selectedValue ? ' dynamic-select-selected' : ''}${this.data[i].text || this.data[i].html ? '' : ' dynamic-select-no-text'}" data-value="${this.data[i].value}" style="width:${optionWidth}%;${this.height ? 'height:' + this.height + ';' : ''}"${this.data[i].disabled ? ' disabled' : ''}>
+                <item class="dynamic-select-option${this.data[i].value == this.selectedValue ? ' dynamic-select-selected' : ''}${this.data[i].text || this.data[i].html ? '' : ' dynamic-select-no-text'}${this.options.itemsClass ? ' ' + this.options.itemsClass : ''}" data-value="${this.data[i].value}" style="width:${optionWidth}%;${this.height ? 'height:' + this.height + ';' : ''}${this.options.itemsStyle}"${this.data[i].disabled ? ' disabled' : ''}>
                     ${optionContent}
                 </item>
             `;
@@ -142,9 +144,9 @@ class DynamicSelect {
         })}).observe(this.element, { attributes: true });
         
         const header = this.element.querySelector('.dynamic-select-header');
-        this.open = () => (!this.disabled) && header.classList.add('dynamic-select-header-active');
-        this.close = () => (!this.disabled) && header.classList.remove('dynamic-select-header-active');
-        this.toggle = () => (!this.disabled) && header.classList.toggle('dynamic-select-header-active');
+        this.open = () =>   {(!this.disabled) && header.classList.add('dynamic-select-header-active'); this.scrollToSelectedOption()}
+        this.close = () =>   (!this.disabled) && header.classList.remove('dynamic-select-header-active');
+        this.toggle = () => {(!this.disabled) && header.classList.toggle('dynamic-select-header-active'); this.scrollToSelectedOption()}
 
         this.element.querySelectorAll('.dynamic-select-option').forEach(option =>
         option.addEventListener('click', () => this.optionElement = option));
@@ -170,8 +172,9 @@ class DynamicSelect {
             if (!event.target.closest('.' + this.name)
             &&  !event.target.closest('label[for="' + this.selectElement.id + '"]')
             &&  !event.target.closest('div:has(.' + this.name + ')')?.children[0].classList.contains(this.name)
-            &&  event.target.closest('dynamic-select') !== this.element)
+            &&   event.target.closest('dynamic-select') !== this.element)
             {
+                
                 const option = getContextOfClickedTargetDynamicOption(event.target);
                 if (option.clicked && !option.disabled) this.close();
             }
@@ -249,7 +252,7 @@ class DynamicSelect {
             }
             else return;
     
-
+            
             for (let i = 0; i < options.length; i++) {
                     newOption = options[index];
                 if (newOption
@@ -264,6 +267,18 @@ class DynamicSelect {
         if (this.selectedValue) {
             this.element.querySelector('.dynamic-select-header').innerHTML = this.element.querySelector('.dynamic-select-selected').innerHTML;
         }
+    }
+
+    scrollToSelectedOption() {
+        if (!this.options.optionElement) return;
+        const containerRect = this.element.querySelector('.dynamic-select-options').getBoundingClientRect();
+        const optionRect = this.options.optionElement.getBoundingClientRect();
+
+        if (optionRect.top < containerRect.top
+        ||  optionRect.bottom > containerRect.bottom
+        ||  optionRect.left < containerRect.left
+        ||  optionRect.right > containerRect.right)
+            this.options.optionElement.scrollIntoView({ block: 'nearest' });
     }
 
     get selectedValue() {
@@ -301,23 +316,15 @@ class DynamicSelect {
         this.element.querySelector(`input[name="${this.name}"]`).value = this.options.optionElement.getAttribute('data-value');
         this.data.forEach(data => data.selected = false);
         this.data.filter(data => data.value == this.options.optionElement.getAttribute('data-value'))[0].selected = true;
-
+        
         this.options.onChange(
             this.options.optionElement.getAttribute('data-value'),
-            this.options.optionElement.querySelector('.dynamic-select-option-text')
-            ? this.options.optionElement.querySelector('.dynamic-select-option-text').innerHTML
-            : '', this.options.optionElement
+            this.options.optionElement.querySelector('.dynamic-select-option-text') ?
+            this.options.optionElement.querySelector('.dynamic-select-option-text').innerHTML : '',
+            this.options.optionElement
         );
 
-        const containerRect = this.element.querySelector('.dynamic-select-options').getBoundingClientRect();
-        const optionRect = this.options.optionElement.getBoundingClientRect();
-
-        if (optionRect.top < containerRect.top
-        ||  optionRect.bottom > containerRect.bottom
-        ||  optionRect.left < containerRect.left
-        ||  optionRect.right > containerRect.right)
-            this.options.optionElement.scrollIntoView({ block: 'nearest' });
-            
+        this.scrollToSelectedOption();
         this.element.querySelectorAll('.dynamic-select-option').forEach(option => option.classList.remove('focus'));
         this.optionElement.classList.toggle('focus');
     }
@@ -384,8 +391,8 @@ class DynamicSelect {
 
     set disabled(value) {
         this.options.disabled = value;
-        (this.disabled == true)
-        ? this.element.querySelector(`input[name="${this.name}"]`).setAttribute('disabled', '')
+        this.disabled == true
+        ? this.element.querySelector(`input[name="${this.name}"]`).setAttribute('disabled','')
         : this.element.querySelector(`input[name="${this.name}"]`).removeAttribute('disabled');
     }
 
