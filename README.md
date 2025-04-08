@@ -36,9 +36,9 @@ The complete guide and reference is available here: [https://codeshack.io/multi-
 3. Initialize the dynamic select element in your HTML file:
     ```html
     <select id="dynamic-select" name="example-select" data-placeholder="Select an option" data-dynamic-select>
-      <option value="1" data-img="path/to/img1.jpg">Option 1</option>
-      <option value="2" data-img="path/to/img2.png" disabled>Option 2</option>
-      <option value="3" data-img="path/to/img3.svg">Option 3</option>
+      <option value="1" data-img="path/to/image1.jpg">Option 1</option>
+      <option value="2" data-img="path/to/image2.png" disabled>Option 2</option>
+      <option value="3" data-img="path/to/image3.svg">Option 3</option>
     </select>
     ```
 
@@ -231,23 +231,9 @@ new DynamicSelect('#dynamic-select', {
     dropdownStyle: 'background-color: #E8E8E8',
     // Customize options ( <item> elements of parent <dropdown> )
     data: [
-        {
-            value: '1',
-            text: 'Option 1',
-            img: 'path/to/image1.jpg'
-        },
-        {
-            value: '2',
-            text: 'Option 2',
-            img: 'path/to/image2.jpg',
-            disabled: true
-        },
-        {
-            value: '3',
-            text: 'Option 3',
-            img: 'path/to/image3.jpg',
-            selected: true
-        }
+        { value: '1', text: 'Option 1', img: 'path/to/image1.jpg' },
+        { value: '2', text: 'Option 2', img: 'path/to/image2.jpg', disabled: true },
+        { value: '3', text: 'Option 3', img: 'path/to/image3.jpg', selected: true }
     ],
     onChange: function(value, text, option) {
         console.log(value, text, option);
