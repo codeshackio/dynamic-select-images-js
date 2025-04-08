@@ -137,6 +137,7 @@ Custom defined HTML context data of `<item>` element requires an instance of `.d
 
 **More Advanced Examples** - https://jsfiddle.net/sat6h1r4/
 
+<br>
 
 ### Example with Multiple Columns
 
@@ -242,6 +243,7 @@ new DynamicSelect('#dynamic-select', {
 ```
 **More Advanced Examples** - https://jsfiddle.net/sat6h1r4/
 
+<br>
 
 ## License
 
