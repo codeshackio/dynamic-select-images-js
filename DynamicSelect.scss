@@ -1,3 +1,16 @@
+dynamic-select {
+    selection, selected, dropdown, item {
+        all: unset;
+        display: block;
+    }
+}
+dynamic-select[disabled],
+.dynamic-select .dynamic-select-options .dynamic-select-option[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: transparent;
+    pointer-events: none;
+}
 .dynamic-select {
     display: flex;
     box-sizing: border-box;
@@ -63,7 +76,7 @@
         }
         .dynamic-select-option {
             padding: 7px 12px;
-            &:hover, &:active {
+            &:hover, &:active, &.focus {
                 background-color: #f3f4f7;
             }
         }
