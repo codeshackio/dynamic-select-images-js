@@ -214,7 +214,7 @@ To customize the dynamic select with images, you can modify the HTML and JavaScr
 
 - `onChange`: Callback function when the selected option changes.
 
-
+<br>
 
 Example configuration:
 ```javascript
